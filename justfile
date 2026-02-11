@@ -18,12 +18,12 @@ build:
         -t {{image_name}} .
     @echo "✓ 建置完成: {{image_name}}"
 
-# 執行容器（Podman rootless）
-run:
-    @echo "執行容器（Podman rootless）..."
+# 執行容器（Podman rootless，可指定掛載路徑，預設為目前目錄）
+run path=invocation_directory():
+    @echo "執行容器（掛載: {{path}} -> /workspace）..."
     podman run -it --rm \
         --userns=keep-id \
-        -v "$(pwd)":/workspace:Z \
+        -v "{{path}}":/workspace:Z \
         {{image_name}}
 
 # 清理映像
