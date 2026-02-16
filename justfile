@@ -21,9 +21,15 @@ build:
 # 執行容器（Podman rootless，可指定掛載路徑，預設為目前目錄）
 run path=invocation_directory():
     @echo "執行容器（掛載: {{path}} -> /workspace）..."
+    @# 確保主機設定目錄存在
+    mkdir -p ~/.gemini
+    @# 確保 .gitconfig 存在，避免掛載失敗
+    touch ~/.gitconfig
     podman run -it --rm \
         --userns=keep-id \
         -v "{{path}}":/workspace:Z \
+        -v "$HOME/.gemini":"/home/$(whoami)/.gemini":Z \
+        -v "$HOME/.gitconfig":"/home/$(whoami)/.gitconfig":Z \
         {{image_name}}
 
 # 清理映像
