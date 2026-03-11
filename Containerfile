@@ -3,6 +3,8 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
+ENV TERM=xterm-256color
+ENV COLORTERM=truecolor
 
 # ---------------------------
 # 使用者配置參數
@@ -54,8 +56,9 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local/
 # ---------------------------
 # Go
 # ---------------------------
-ARG GO_VERSION=1.25.6
-RUN curl -fsSL https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
+ARG TARGETARCH
+ARG GO_VERSION=1.26.0
+RUN curl -fsSL https://go.dev/dl/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz \
     | tar -C /usr/local -xz
 
 ENV PATH="/usr/local/go/bin:${PATH}"
@@ -145,12 +148,13 @@ ENV PATH="$BUN_INSTALL/bin:${PATH}"
 # Install Scala with cs setup
 # Install Coursier and Scala to user local bin
 RUN mkdir -p $HOME/.local/bin \
-    && curl -fL https://github.com/coursier/coursier/releases/latest/download/cs-x86_64-pc-linux.gz \
-    | gzip -d > $HOME/.local/bin/cs && chmod +x $HOME/.local/bin/cs \
+    && curl -fLo $HOME/.local/bin/cs \
+    https://github.com/coursier/launchers/raw/master/coursier \
+    && chmod +x $HOME/.local/bin/cs \
     && $HOME/.local/bin/cs install --install-dir $HOME/.local/bin scala scalac
 
 # Install mill to user local bin
-RUN curl -fL https://repo1.maven.org/maven2/com/lihaoyi/mill-dist/1.1.0-RC4/mill-dist-1.1.0-RC4-mill.sh \
+RUN curl -fL https://repo1.maven.org/maven2/com/lihaoyi/mill-dist/1.0.6/mill-dist-1.0.6-mill.sh \
     -o $HOME/.local/bin/mill \
     && chmod +x $HOME/.local/bin/mill
 
@@ -160,9 +164,11 @@ ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
 # LLM CLI common deps
 # ---------------------------
 RUN bun install -g \
-    @anthropic-ai/claude-code \
-    @google/gemini-cli \
+    @google/gemini-cli@0.24.5 \
     opencode-ai
+
+# Install claude code
+RUN curl -fsSL https://claude.ai/install.sh | bash
 
 WORKDIR /workspace
 

@@ -28,6 +28,7 @@ run path=invocation_directory():
     podman run -it --rm \
         --userns=keep-id \
         -v "{{path}}":/workspace:Z \
+        -v "$HOME/.claude":"/home/$(whoami)/.claude":Z \
         -v "$HOME/.gemini":"/home/$(whoami)/.gemini":Z \
         -v "$HOME/.gitconfig":"/home/$(whoami)/.gitconfig":Z \
         {{image_name}}
